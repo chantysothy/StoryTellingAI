@@ -6,16 +6,11 @@ $(document).ready(function() {
     var lastUserMessage = '';
 
     ws.onmessage = function(event) {
-        if (event.data.startsWith('__feedback__')) {
-            var botMessage = event.data.replace('__feedback__', '');
-            removeTypingIndicator();
-            appendMessage(botMessage, 'bot');
-            botMessageBuffer = '';
-        } else {
-            removeTypingIndicator();
-            botMessageBuffer += event.data;
-            appendMessage(event.data, 'bot');
-        }
+  
+    	removeTypingIndicator();
+    	botMessageBuffer += event.data;
+    	appendMessage(event.data, 'bot');
+
     };
 
     function appendMessage(message, className) {
@@ -73,8 +68,16 @@ $(document).ready(function() {
 
  	var socketimage = new WebSocket(`ws://${window.location.host}/ws/image`);
 	socketimage.onmessage = function (event)  {
-        const imageData = event.data;
-        populateImageHolder(imageData);
+		if (event.data instanceof Blob) {
+			const reader = new FileReader();
+			
+			reader.onload = function() {
+				const img = document.getElementById('outputImage');
+				img.src = reader.result;
+			};
+			
+			reader.readAsDataURL(event.data);  
+		}
 		console.log("image received");
 	};
 	
@@ -83,9 +86,5 @@ $(document).ready(function() {
 	}; 
 	
 	
-	function populateImageHolder(imageData) {
-		var img = document.getElementById('outputImage');
-		img.src = 'data:image/png;base64,' + imageData;
-	}
 
 });
